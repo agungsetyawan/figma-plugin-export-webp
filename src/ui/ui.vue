@@ -79,7 +79,7 @@ export default {
       processing: false,
       isCompressImage: true,
       isDisableMiniImage: false,
-      errorMessage: 'asd',
+      errorMessage: '',
       threshold: 200 // in Bytes
     }
   },
@@ -173,7 +173,7 @@ export default {
         this.clearErrorMessage()
         await this.zipImages(this.checkedImage)
       } catch (error) {
-        this.errorMessage = 'Error occurred!' + error
+        this.errorMessage = 'Error occurred! ' + error
       } finally {
         this.processing = false
       }
