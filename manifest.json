@@ -1,5 +1,5 @@
 {
-  "name": "Image Compressor",
+  "name": "Export .webp",
   "id": "1115711664591329154",
   "api": "1.0.0",
   "main": "dist/code.js",

@@ -1,4 +1,4 @@
-# Image Compressor Plugin for Figma
+# Export .webp Plugin for Figma
 
 ## Features:
 

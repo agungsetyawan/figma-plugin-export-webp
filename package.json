@@ -1,5 +1,5 @@
 {
-  "name": "plugin-figma-image-compressor",
+  "name": "figma-plugin-export-webp",
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
