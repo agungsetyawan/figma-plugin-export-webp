@@ -1,6 +1,10 @@
 <template lang="pug">
 div
   div(v-if='images.length')
+    .sticky-top(:class='errorMessage ? "fade-in" : ""')
+      .flex
+        .label.label--error {{ errorMessage }}
+        .icon.icon--close.icon--white(@click='clearErrorMessage')
     .image-compressor(style='padding-bottom: 120px')
       .section
         .section-title Images
@@ -29,10 +33,9 @@ div
             )
             label.switch__label(for='compressImage') Compress Image
       .section.pb-xxsmall
-        .flex.justify-content-end
-          .label.label--error(v-if='errorMessage') {{ errorMessage }}
-          .label(v-else) {{ textLabel }}
-          button.button.button--primary.mr-xxsmall(
+        .flex.justify-content-between.align-items-end
+          .label {{ textLabel }}
+          button.button.button--primary.mr-xxxsmall(
             :disabled='!hasImages || processing'
           )(
             @click='handleExport()'
@@ -46,10 +49,9 @@ div
 </template>
 
 <script>
-import { dispatch, handleEvent } from './uiMessageHandler'
-
 // Add these lines to import the interactive figma-ui components as needed.
 import { selectMenu, disclosure } from 'figma-plugin-ds'
+import { dispatch, handleEvent } from './uiMessageHandler'
 
 export default {
   data() {
@@ -72,10 +74,12 @@ export default {
     })
 
     handleEvent('getImages', images => {
-      this.images = [...images.map(image => ({
-        ...image,
-        checked: true
-      }))]
+      this.images = [
+        ...images.map(image => ({
+          ...image,
+          checked: true
+        }))
+      ]
     })
   },
   computed: {
@@ -89,8 +93,10 @@ export default {
       return this.imagesCount > 0
     },
     textLabel() {
-      return this.processing ? `Processing ${this.imagesCount} images` : `Selected ${this.imagesCount} images`
-    },
+      return this.processing
+        ? `Processing ${this.imagesCount} images`
+        : `Selected ${this.imagesCount} images`
+    }
   },
   methods: {
     createNode() {
@@ -99,16 +105,21 @@ export default {
     },
     handleExport() {
       console.log('export')
-      this.errorMessage = ''
+      this.clearErrorMessage()
       this.processing = true
       setTimeout(() => {
         this.processing = false
-        this.errorMessage = 'error'
-      }, 5000);
+        this.errorMessage = 'Error occurred!'
+      }, 5000)
     },
     getImageBlob(data) {
-      const blob = new Blob([new Uint8Array(data.bytes)], { type: data.mimetype })
+      const blob = new Blob([new Uint8Array(data.bytes)], {
+        type: data.mimetype
+      })
       return URL.createObjectURL(blob)
+    },
+    clearErrorMessage() {
+      this.errorMessage = ''
     }
   }
 }
@@ -116,6 +127,19 @@ export default {
 
 <style lang="scss">
   @import '~figma-plugin-ds/dist/figma-plugin-ds';
+
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
 
   .section {
     &:not(:first-child) {
@@ -172,7 +196,7 @@ export default {
 
   .label {
     &--error {
-      color: var(--red);
+      color: var(--silver);
     }
   }
 
@@ -186,6 +210,21 @@ export default {
       display: flex;
       margin: 8px;
       justify-content: flex-end;
+    }
+  }
+
+  .sticky-top {
+    position: absolute;
+    width: 100%;
+    top: -50px;
+    background-color: var(--red);
+    border-bottom: 1px solid var(--silver);
+    z-index: 2;
+    transition: all 0.5s;
+
+    &.fade-in {
+      position: sticky;
+      top: 0;
     }
   }
 </style>

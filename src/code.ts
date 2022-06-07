@@ -53,7 +53,7 @@ const dispatchGetImages = async (): Promise<void> => {
 
 const main = async (): Promise<void> => {
   try {
-    figma.showUI(__html__, { height: 450 })
+    figma.showUI(__html__, { height: 470 })
     await dispatchGetImages()
     figma.on('selectionchange', async () => {
       await dispatchGetImages()
