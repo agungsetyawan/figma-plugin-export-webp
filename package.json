@@ -7,7 +7,8 @@
     "build": "webpack --mode=production"
   },
   "dependencies": {
-    "figma-plugin-ds": "^1.0.1"
+    "figma-plugin-ds": "^1.0.1",
+    "jszip": "^3.10.0"
   },
   "devDependencies": {
     "@types/node": "^12.0.5",

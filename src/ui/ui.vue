@@ -4,12 +4,12 @@ div
     .sticky-top(:class='errorMessage ? "fade-in" : ""')
       .flex
         .label.label--error {{ errorMessage }}
-        .icon.icon--close.icon--white(@click='clearErrorMessage')
-    .image-compressor(style='padding-bottom: 120px')
+        .icon.icon--close.icon--white(@click='clearErrorMessage()')
+    .image-list
       .section
         .section-title Images
         .section-container.column.align-items-start
-          .image-items(v-for='image of images')
+          .image-items(v-for='image of imageList')
             .image-items__checkbox.checkbox
               input.checkbox__box(
                 type='checkbox',
@@ -20,18 +20,30 @@ div
               label.checkbox__label(:for='"checkboxImage" + image.id')
             .image-items__picture
               img(:src='getImageBlob(image)')
-            .image-items__name.type.type--small.pl-xsmall.pr-xxsmall {{ image.name }}
+            .image-items__size.type.pl-xxsmall {{ image.size | toMB }}MB
+            .image-items__name.type.pl-xxsmall.pr-xxsmall {{ image.name }}
     .sticky-bottom
       .section
         .section-title Options
-        .section-container
+        .section-container.column
           .switch
             input#compressImage.switch__toggle(
               type='checkbox',
               v-model='isCompressImage',
-              :disabled='!hasImages || processing'
+              :disabled='processing'
             )
             label.switch__label(for='compressImage') Compress Image
+          .flex.align-items-center
+            .switch
+              input#disableMiniImage.switch__toggle(
+                type='checkbox',
+                v-model='isDisableMiniImage',
+                :disabled='processing'
+              )
+              label.switch__label(for='disableMiniImage') Disable Image
+            .input.input--byte
+              input.input__field(type='number', v-model='threshold')
+              .type Bytes
       .section.pb-xxsmall
         .flex.justify-content-between.align-items-end
           .label {{ textLabel }}
@@ -51,16 +63,24 @@ div
 <script>
 // Add these lines to import the interactive figma-ui components as needed.
 import { selectMenu, disclosure } from 'figma-plugin-ds'
+import JSZip from 'jszip/dist/jszip.min.js'
 import { dispatch, handleEvent } from './uiMessageHandler'
 
 export default {
+  filters: {
+    toMB(size) {
+      return (size / 1048576).toFixed(2)
+    }
+  },
   data() {
     return {
       message: '',
       images: [],
       processing: false,
       isCompressImage: true,
-      errorMessage: ''
+      isDisableMiniImage: false,
+      errorMessage: 'asd',
+      threshold: 200 // in Bytes
     }
   },
   mounted() {
@@ -75,14 +95,23 @@ export default {
 
     handleEvent('getImages', images => {
       this.images = [
-        ...images.map(image => ({
-          ...image,
-          checked: true
-        }))
+        ...images.map(image => {
+          const size = image.bytes.byteLength
+          return {
+            ...image,
+            checked: this.isDisableMiniImage ? size >= this.threshold : true,
+            size
+          }
+        })
       ]
     })
   },
   computed: {
+    imageList() {
+      return this.images.filter(image =>
+        this.isDisableMiniImage ? image.size >= this.threshold : true
+      )
+    },
     checkedImage() {
       return this.images.filter(image => image.checked)
     },
@@ -95,7 +124,14 @@ export default {
     textLabel() {
       return this.processing
         ? `Processing ${this.imagesCount} images`
-        : `Selected ${this.imagesCount} images`
+        : `Selected ${this.imagesCount} images (${this.totalSize} MB)`
+    },
+    totalSize() {
+      const size = this.checkedImage.reduce(
+        (total, image) => total + image.bytes.byteLength,
+        0
+      )
+      return (size / 1048576).toFixed(2)
     }
   },
   methods: {
@@ -103,14 +139,44 @@ export default {
       // This shows how the UI code can send messages to the main code.
       dispatch('createNode')
     },
-    handleExport() {
-      console.log('export')
-      this.clearErrorMessage()
-      this.processing = true
-      setTimeout(() => {
+    zipImages(images) {
+      return new Promise((resolve, reject) => {
+        const zip = new JSZip()
+
+        for (const image of images) {
+          const { bytes, name, type, mimetype } = image
+          const extension = type.toLowerCase()
+          const blob = new Blob([new Uint8Array(bytes)], { type: mimetype })
+          zip.file(`${name}.${extension}`, blob, { base64: true })
+        }
+
+        zip
+          .generateAsync({ type: 'blob' })
+          .then(content => {
+            const blobURL = window.URL.createObjectURL(content)
+            const link = document.createElement('a')
+            link.className = 'button button--primary'
+            link.href = blobURL
+            link.download = 'export.zip'
+            link.click()
+            link.setAttribute('download', name + '.zip')
+            resolve()
+          })
+          .catch(err => {
+            reject(err)
+          })
+      })
+    },
+    async handleExport() {
+      try {
+        this.processing = true
+        this.clearErrorMessage()
+        await this.zipImages(this.checkedImage)
+      } catch (error) {
+        this.errorMessage = 'Error occurred!' + error
+      } finally {
         this.processing = false
-        this.errorMessage = 'Error occurred!'
-      }, 5000)
+      }
     },
     getImageBlob(data) {
       const blob = new Blob([new Uint8Array(data.bytes)], {
@@ -120,6 +186,18 @@ export default {
     },
     clearErrorMessage() {
       this.errorMessage = ''
+    }
+  },
+  watch: {
+    images() {
+      this.clearErrorMessage()
+    },
+    isDisableMiniImage() {
+      this.images.forEach(image => {
+        if (image.size < this.threshold) {
+          image.checked = false
+        }
+      })
     }
   }
 }
@@ -139,6 +217,10 @@ export default {
   }
   ::-webkit-scrollbar-thumb:hover {
     background: #555;
+  }
+
+  .image-list {
+    padding-bottom: 155px;
   }
 
   .section {
@@ -200,6 +282,14 @@ export default {
     }
   }
 
+  .input {
+    &--byte {
+      display: flex;
+      width: 100px;
+      align-items: center;
+    }
+  }
+
   .sticky-bottom {
     position: fixed;
     width: 100%;
@@ -215,11 +305,10 @@ export default {
 
   .sticky-top {
     position: absolute;
-    width: 100%;
     top: -50px;
-    background-color: var(--red);
-    border-bottom: 1px solid var(--silver);
+    width: 100%;
     z-index: 2;
+    background-color: var(--red);
     transition: all 0.5s;
 
     &.fade-in {
