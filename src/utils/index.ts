@@ -36,7 +36,8 @@ export const zipImages = (
 
 export const fetchConvert = (
   file: string,
-  compress: boolean = false
+  compress: boolean = false,
+  signal: AbortSignal
 ): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const body = { file, compress }
@@ -51,7 +52,8 @@ export const fetchConvert = (
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: params
+      body: params,
+      signal
     })
       //   .then(response => {
       //     response.ok

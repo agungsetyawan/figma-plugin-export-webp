@@ -16,7 +16,7 @@ div
                 :id='"checkboxImage" + image.id',
                 v-model='image.checked',
                 :disabled='processing'
-              ) 
+              )
               label.checkbox__label(:for='"checkboxImage" + image.id')
             .image-items__picture
               img(:src='getImageBlob(image)')
@@ -46,13 +46,22 @@ div
               .type Bytes
       .section.pb-xxsmall
         .flex.justify-content-between.align-items-end
-          .label {{ textLabel }}
+          .label(v-if='uploading') Uploading...
+          .label(v-else-if='processing') Zipping {{ imagesCount }} images
+          .label(v-else) Selected {{imagesCount}} images ({{totalSize}} MB)
           button.button.button--primary.mr-xxxsmall(
-            :disabled='!hasImages || processing'
+            v-if='!processing',
+            :disabled='!hasImages'
           )(
             @click='handleExport()'
           ) Export to .webp
-            .icon.icon--spinner.icon--spin.icon--white(v-if='processing')
+          button.button.button--secondary.mr-xxxsmall(
+            v-else,
+            :disabled='!hasImages'
+          )(
+            @click='abortExport()'
+          ) Cancel
+            .icon.icon--spinner.icon--spin
     //- button.button.button--primary(@click='createNode') Create a node
     //- p.type.type--small {{ message }}
   .section-container.section-container--empty(v-else)
@@ -62,9 +71,11 @@ div
 
 <script>
 // Add these lines to import the interactive figma-ui components as needed.
-import { selectMenu, disclosure } from 'figma-plugin-ds'
+// import { selectMenu, disclosure } from 'figma-plugin-ds'
 import { dispatch, handleEvent } from './uiMessageHandler'
 import { zipImages, fetchConvert } from '../utils'
+
+let controller
 
 export default {
   filters: {
@@ -77,6 +88,7 @@ export default {
       message: '',
       images: [],
       processing: false,
+      uploading: false,
       isCompressImage: false,
       isDisableMiniImage: false,
       errorMessage: '',
@@ -85,8 +97,8 @@ export default {
   },
   mounted() {
     // Add these lines to initialize the interactive figma-ui components as needed.
-    selectMenu.init()
-    disclosure.init()
+    // selectMenu.init()
+    // disclosure.init()
 
     // The following shows how messages from the main code can be handled in the UI code.
     handleEvent('nodeCreated', nodeID => {
@@ -94,7 +106,7 @@ export default {
     })
 
     handleEvent('getImages', images => {
-      if (images)
+      if (!this.processing)
         this.images = [
           ...images.map(image => {
             const size = image.bytes.byteLength
@@ -122,11 +134,6 @@ export default {
     hasImages() {
       return this.imagesCount > 0
     },
-    textLabel() {
-      return this.processing
-        ? `Processing ${this.imagesCount} images`
-        : `Selected ${this.imagesCount} images (${this.totalSize} MB)`
-    },
     totalSize() {
       const size = this.checkedImage.reduce(
         (total, image) => total + image.bytes.byteLength,
@@ -142,18 +149,25 @@ export default {
     },
     async handleExport() {
       try {
-        this.processing = true
+        controller = new AbortController()
         this.clearErrorMessage()
+        this.processing = true
         const zipImage = await zipImages(this.checkedImage)
-        const outputFile = await fetchConvert(zipImage, this.isCompressImage)
+
+        this.uploading = true
+        const outputFile = await fetchConvert(zipImage, this.isCompressImage, controller.signal)
         const file = window.URL.createObjectURL(outputFile)
         window.location.assign(file)
       } catch (error) {
         console.error(error)
         this.errorMessage = error
       } finally {
-        this.processing = false
+        this.resetProcessState()
       }
+    },
+    abortExport() {
+      controller.abort()
+      this.resetProcessState()
     },
     getImageBlob(data) {
       const blob = new Blob([new Uint8Array(data.bytes)], {
@@ -163,11 +177,16 @@ export default {
     },
     clearErrorMessage() {
       this.errorMessage = ''
+    },
+    resetProcessState() {
+      this.processing = false
+      this.uploading = false
     }
   },
   watch: {
     images() {
       this.clearErrorMessage()
+      this.resetProcessState()
     },
     isDisableMiniImage() {
       this.images.forEach(image => {
