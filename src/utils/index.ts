@@ -8,15 +8,7 @@ export interface Images {
   mimetype: string
 }
 
-export const zipImages = (
-  images: Array<Images>,
-  options = {
-    compression: 'DEFLATE',
-    compressionOptions: {
-      level: 7
-    }
-  }
-): Promise<string> => {
+export const zipImages = (images: Array<Images>): Promise<string> => {
   return new Promise((resolve, reject) => {
     const zip = new JSZip()
 
@@ -28,7 +20,7 @@ export const zipImages = (
     }
 
     zip
-      .generateAsync({ type: 'base64', ...options })
+      .generateAsync({ type: 'base64' })
       .then(content => resolve(content))
       .catch(err => reject(err))
   })
