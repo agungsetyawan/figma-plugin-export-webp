@@ -94,16 +94,17 @@ export default {
     })
 
     handleEvent('getImages', images => {
-      this.images = [
-        ...images.map(image => {
-          const size = image.bytes.byteLength
-          return {
-            ...image,
-            checked: this.isDisableMiniImage ? size >= this.threshold : true,
-            size
-          }
-        })
-      ]
+      if (images)
+        this.images = [
+          ...images.map(image => {
+            const size = image.bytes.byteLength
+            return {
+              ...image,
+              checked: this.isDisableMiniImage ? size >= this.threshold : true,
+              size
+            }
+          })
+        ]
     })
   },
   computed: {
@@ -242,11 +243,12 @@ export default {
         height: 48px;
         width: 48px;
         img {
-          // background-color: var(--silver);
           border-radius: var(--border-radius-med);
-          object-fit: cover;
+          object-fit: contain;
           width: 100%;
           height: 100%;
+          border: 0.1px solid var(--silver);
+          background-color: var(--silver);
         }
       }
     }

@@ -1,4 +1,6 @@
 import { dispatch, handleEvent } from './codeMessageHandler'
+
+const { selection } = figma.currentPage
 export interface Images {
   id: string
   name: string
@@ -7,32 +9,49 @@ export interface Images {
   mimetype: string
 }
 
-const getImages = async (nodes: ReadonlyArray<any>) => {
+const setImage = (id: string, name: string, bytes: Uint8Array) => {
+  const PNG = {
+    id,
+    name,
+    bytes,
+    type: 'PNG',
+    mimetype: 'image/png'
+  }
+  const SVG = {
+    id,
+    name,
+    bytes,
+    type: 'SVG',
+    mimetype: 'image/svg+xml'
+  }
+  return { PNG, SVG }
+}
+
+const getImagesFromNode = async (nodes: ReadonlyArray<any>) => {
   try {
     const images: Array<Images> = []
     for (const node of nodes) {
-      for (const fill of node.fills) {
-        const { id, name } = node
-        switch (fill.type) {
-          case 'IMAGE':
-            images.push({
-              id,
-              name,
-              bytes: await figma.getImageByHash(fill.imageHash).getBytesAsync(),
-              type: 'PNG',
-              mimetype: 'image/png'
-            })
-            break
-          case 'SOLID':
-            images.push({
-              id,
-              name,
-              bytes: await node.exportAsync({ format: 'SVG' }),
-              type: 'SVG',
-              mimetype: 'image/svg+xml'
-            })
-            break
+      const { id, name, fills } = node
+      if (fills && fills.length) {
+        for (const fill of fills) {
+          switch (fill.type) {
+            case 'IMAGE': {
+              const bytes = await figma
+                .getImageByHash(fill.imageHash)
+                .getBytesAsync()
+              images.push(setImage(id, name, bytes).PNG)
+              break
+            }
+            case 'SOLID': {
+              const bytes = await node.exportAsync({ format: 'SVG' })
+              images.push(setImage(id, name, bytes).SVG)
+              break
+            }
+          }
         }
+      } else {
+        const bytes = await node.exportAsync({ format: 'SVG' })
+        images.push(setImage(id, name, bytes).SVG)
       }
     }
     return images
@@ -43,9 +62,7 @@ const getImages = async (nodes: ReadonlyArray<any>) => {
 
 const dispatchGetImages = async (): Promise<void> => {
   try {
-    const { selection } = figma.currentPage
-    const images = await getImages(selection)
-    dispatch('getImages', images)
+    dispatch('getImages', await getImagesFromNode(selection))
   } catch (error) {
     console.error(error)
   }
