@@ -63,8 +63,8 @@ div
 <script>
 // Add these lines to import the interactive figma-ui components as needed.
 import { selectMenu, disclosure } from 'figma-plugin-ds'
-import JSZip from 'jszip/dist/jszip.min.js'
 import { dispatch, handleEvent } from './uiMessageHandler'
+import { zipImages, fetchConvert } from '../utils'
 
 export default {
   filters: {
@@ -77,7 +77,7 @@ export default {
       message: '',
       images: [],
       processing: false,
-      isCompressImage: true,
+      isCompressImage: false,
       isDisableMiniImage: false,
       errorMessage: '',
       threshold: 200 // in Bytes
@@ -139,41 +139,17 @@ export default {
       // This shows how the UI code can send messages to the main code.
       dispatch('createNode')
     },
-    zipImages(images) {
-      return new Promise((resolve, reject) => {
-        const zip = new JSZip()
-
-        for (const image of images) {
-          const { bytes, name, type, mimetype } = image
-          const extension = type.toLowerCase()
-          const blob = new Blob([new Uint8Array(bytes)], { type: mimetype })
-          zip.file(`${name}.${extension}`, blob, { base64: true })
-        }
-
-        zip
-          .generateAsync({ type: 'blob' })
-          .then(content => {
-            const blobURL = window.URL.createObjectURL(content)
-            const link = document.createElement('a')
-            link.className = 'button button--primary'
-            link.href = blobURL
-            link.download = 'export.zip'
-            link.click()
-            link.setAttribute('download', name + '.zip')
-            resolve()
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
-    },
     async handleExport() {
       try {
         this.processing = true
         this.clearErrorMessage()
-        await this.zipImages(this.checkedImage)
+        const zipImage = await zipImages(this.checkedImage)
+        const outputFile = await fetchConvert(zipImage, this.isCompressImage)
+        const file = window.URL.createObjectURL(outputFile)
+        window.location.assign(file)
       } catch (error) {
-        this.errorMessage = 'Error occurred! ' + error
+        console.error(error)
+        this.errorMessage = error
       } finally {
         this.processing = false
       }
