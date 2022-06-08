@@ -1,6 +1,6 @@
+import debounce from 'debounce-promise'
 import { dispatch, handleEvent } from './codeMessageHandler'
 
-const { selection } = figma.currentPage
 export interface Images {
   id: string
   name: string
@@ -62,6 +62,8 @@ const getImagesFromNode = async (nodes: ReadonlyArray<any>) => {
 
 const dispatchGetImages = async (): Promise<void> => {
   try {
+    const { selection } = figma.currentPage
+    if (!selection.length) return
     dispatch('getImages', await getImagesFromNode(selection))
   } catch (error) {
     console.error(error)
@@ -71,10 +73,9 @@ const dispatchGetImages = async (): Promise<void> => {
 const main = async (): Promise<void> => {
   try {
     figma.showUI(__html__, { height: 470 })
-    await dispatchGetImages()
-    figma.on('selectionchange', async () => {
-      await dispatchGetImages()
-    })
+    dispatchGetImages()
+    const debounced = debounce(dispatchGetImages, 2000)
+    figma.on('selectionchange', () => debounced())
 
     // The following shows how messages from the UI code can be handled in the main code.
     handleEvent('createNode', () => {
