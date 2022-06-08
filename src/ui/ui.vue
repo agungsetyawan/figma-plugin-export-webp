@@ -1,7 +1,7 @@
 <template lang="pug">
 div
   div(v-if='images.length')
-    .sticky-top(:class='errorMessage ? "fade-in" : ""')
+    .sticky-top(:class='{ "fade-in": errorMessage }')
       .flex
         .label.label--error {{ errorMessage }}
         .icon.icon--close.icon--white(@click='clearErrorMessage()')
@@ -46,22 +46,27 @@ div
               .type Bytes
       .section.pb-xxsmall
         .flex.justify-content-between.align-items-end
-          .label(v-if='uploading') Uploading...
+          .label(v-if='uploading') Uploading zip to convert
           .label(v-else-if='processing') Zipping {{ imagesCount }} images
-          .label(v-else) Selected {{imagesCount}} images ({{totalSize}} MB)
+          .label(v-else) Selected {{ imagesCount }} images ({{ totalSize }} MB)
           button.button.button--primary.mr-xxxsmall(
-            v-if='!processing',
-            :disabled='!hasImages'
+            v-if='!processing || !uploading',
+            :disabled='!hasImages || processing'
           )(
             @click='handleExport()'
-          ) Export to .webp
+          ) {{ !processing ? 'Export to .webp' : 'Zipping' }}
+            .icon.icon--spinner.icon--spin.icon--white(v-if='processing')
           button.button.button--secondary.mr-xxxsmall(
-            v-else,
+            v-else-if='uploading',
             :disabled='!hasImages'
           )(
             @click='abortExport()'
-          ) Cancel
-            .icon.icon--spinner.icon--spin
+            @mouseover="isUploadHovering = true"
+            @mouseout="isUploadHovering = false" 
+            :class='{ "button--secondary-destructive": isUploadHovering }'
+          ) {{ isUploadHovering ? 'Cancel' : 'Uploading' }}
+            .icon.icon--close.icon--red(v-if='isUploadHovering')
+            .icon.icon--spinner.icon--spin(v-else)
     //- button.button.button--primary(@click='createNode') Create a node
     //- p.type.type--small {{ message }}
   .section-container.section-container--empty(v-else)
@@ -92,7 +97,8 @@ export default {
       isCompressImage: false,
       isDisableMiniImage: false,
       errorMessage: '',
-      threshold: 200 // in Bytes
+      threshold: 200, // in Bytes,
+      isUploadHovering: false
     }
   },
   mounted() {
@@ -200,117 +206,126 @@ export default {
 </script>
 
 <style lang="scss">
-  @import '~figma-plugin-ds/dist/figma-plugin-ds';
+@import '~figma-plugin-ds/dist/figma-plugin-ds';
 
-  ::-webkit-scrollbar {
-    width: 5px;
-  }
-  ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: #888;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
+::-webkit-scrollbar {
+  width: 5px;
+}
 
-  .image-list {
-    padding-bottom: 155px;
-  }
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
 
-  .section {
-    &:not(:first-child) {
-      border-top: 1px solid var(--silver);
-      margin-top: 8px;
-      padding-top: 8px;
-    }
-    &-container {
-      width: 100%;
-      display: flex;
-      cursor: default;
-      user-select: none;
-      // padding: 0 calc(var(--size-xxsmall) / 2) 0 var(--size-xxsmall);
-      &--empty {
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-      }
-    }
-  }
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
 
-  .image {
-    &-items {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      padding: var(--size-xxsmall) 0;
-      border-top: 1px solid var(--silver);
-      &:first-child {
-        border-top: none;
-        padding-top: 0;
-      }
-      &__name {
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-      }
-      &__picture {
-        min-width: 48px;
-        min-height: 48px;
-        height: 48px;
-        width: 48px;
-        img {
-          border-radius: var(--border-radius-med);
-          object-fit: contain;
-          width: 100%;
-          height: 100%;
-          border: 0.1px solid var(--silver);
-          background-color: var(--silver);
-        }
-      }
-    }
-  }
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
 
-  .label {
-    &--error {
-      color: var(--silver);
-    }
-  }
+.image-list {
+  padding-bottom: 155px;
+}
 
-  .input {
-    &--byte {
-      display: flex;
-      width: 100px;
-      align-items: center;
-    }
-  }
-
-  .sticky-bottom {
-    position: fixed;
-    width: 100%;
-    bottom: 0;
-    background-color: var(--white);
+.section {
+  &:not(:first-child) {
     border-top: 1px solid var(--silver);
-    .container {
-      display: flex;
-      margin: 8px;
-      justify-content: flex-end;
-    }
+    margin-top: 8px;
+    padding-top: 8px;
   }
 
-  .sticky-top {
-    position: absolute;
-    top: -50px;
+  &-container {
     width: 100%;
-    z-index: 2;
-    background-color: var(--red);
-    transition: all 0.5s;
+    display: flex;
+    cursor: default;
+    user-select: none;
 
-    &.fade-in {
-      position: sticky;
-      top: 0;
+    &--empty {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
     }
   }
+}
+
+.image {
+  &-items {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: var(--size-xxsmall) 0;
+    border-top: 1px solid var(--silver);
+
+    &:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    &__name {
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    &__picture {
+      min-width: 48px;
+      min-height: 48px;
+      height: 48px;
+      width: 48px;
+
+      img {
+        border-radius: var(--border-radius-med);
+        object-fit: contain;
+        width: 100%;
+        height: 100%;
+        border: 0.1px solid var(--silver);
+        background-color: var(--silver);
+      }
+    }
+  }
+}
+
+.label {
+  &--error {
+    color: var(--silver);
+  }
+}
+
+.input {
+  &--byte {
+    display: flex;
+    width: 100px;
+    align-items: center;
+  }
+}
+
+.sticky-bottom {
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  background-color: var(--white);
+  border-top: 1px solid var(--silver);
+
+  .container {
+    display: flex;
+    margin: 8px;
+    justify-content: flex-end;
+  }
+}
+
+.sticky-top {
+  position: absolute;
+  top: -50px;
+  width: 100%;
+  z-index: 2;
+  background-color: var(--red);
+  transition: all 0.5s;
+
+  &.fade-in {
+    position: sticky;
+    top: 0;
+  }
+}
 </style>
