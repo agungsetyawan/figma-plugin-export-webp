@@ -72,7 +72,7 @@ const dispatchGetImages = async (): Promise<void> => {
 
 const main = async (): Promise<void> => {
   try {
-    figma.showUI(__html__, { height: 470, width: 320 })
+    figma.showUI(__html__, { height: 470, width: 320, themeColors: true })
     dispatchGetImages()
     const debounced = debounce(dispatchGetImages, 2000)
     figma.on('selectionchange', () => debounced())

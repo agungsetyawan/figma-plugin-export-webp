@@ -1,4 +1,5 @@
 const HtmlWebpackInlineSourcePlugin = require('html-inline-script-webpack-plugin')
+const WatchExternalFilesPlugin = require('webpack-watch-files-plugin').default
 const RemovePlugin = require('remove-files-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
@@ -120,6 +121,9 @@ module.exports = (_env, argv) => ({
             inlineSource: '.(js|css|scss)$',
             chunks: ['ui']
           }),
-          new HtmlWebpackInlineSourcePlugin()
+          new HtmlWebpackInlineSourcePlugin(),
+          new WatchExternalFilesPlugin({
+            files: ['./src/**/*.js', './src/**/*.ts', './src/**/*.vue']
+          })
         ]
 })

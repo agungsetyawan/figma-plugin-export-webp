@@ -4,8 +4,6 @@
 
 - Vue
 - Typescript
-- [Pug](https://pugjs.org/api/getting-started.html)
-- [figma-plugin-ds](https://thomas-lowry.github.io/figma-plugin-ds/) integration
 - Message handler helper functions to simplify communication between the main code and the UI code
 
 ## How to use?

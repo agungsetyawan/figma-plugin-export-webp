@@ -1,6 +1,12 @@
 <template>
-  <div class="container flex" v-if="images.length">
-    <div class="sticky-top" :class="[{ 'fade-in': errorMessage }]">
+  <div
+    v-if="images.length"
+    class="container text-xs"
+  >
+    <div
+      class="sticky-top"
+      :class="[{ 'fade-in': errorMessage }]"
+    >
       <div class="flex">
         <div class="label label--error">{{ errorMessage }}</div>
         <div
@@ -9,133 +15,225 @@
         ></div>
       </div>
     </div>
-    <div class="image-list">
-      <div class="section">
-        <div class="section-title">Images</div>
-        <div class="section-container column align-items-start">
-          <div
-            class="image-items"
-            v-for="image of imageList"
-            :key="'image' + image.id"
-          >
-            <div class="image-items__checkbox checkbox">
-              <input
-                class="checkbox__box"
-                type="checkbox"
-                :id="'checkboxImage' + image.id"
-                v-model="image.checked"
-                :disabled="processing"
-              />
-              <label class="checkbox__label" :for="'checkboxImage' + image.id">
-              </label>
-            </div>
-            <div class="image-items__picture">
-              <img :src="getImageBlob(image)" alt="image" />
-            </div>
-            <div class="image-items__size type pl-xxsmall">
-              {{ image.size | toMB }}MB
-            </div>
-            <div class="image-items__name type pl-xxsmall pr-xxsmall">
-              {{ image.name }}
+    <div class="container">
+      <div class="flex flex-col">
+        <div class="overflow-x-auto">
+          <div class="min-w-full inline-block align-middle">
+            <div class="border rounded-lg overflow-hidden dark:border-gray-700">
+              <table
+                class="table-fixed min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+                aria-label="images"
+              >
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th
+                      scope="col"
+                      class="py-2 pl-3 w-1/12 sticky top-0"
+                    >
+                      <div class="flex items-center h-5">
+                        <input
+                          id="table-checkbox-all"
+                          type="checkbox"
+                          class="border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                        />
+                        <label
+                          for="table-checkbox-all"
+                          class="sr-only"
+                        >
+                          Checkbox
+                        </label>
+                      </div>
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-2 py-2 pl-4 w-6/12 sticky top-0 text-xs text-gray-500 uppercase text-center"
+                    >
+                      Image
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-2 py-2 w-2/12 sticky top-0 text-xs text-gray-500 uppercase text-center"
+                    >
+                      Size
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-2 py-2 w-3/12 sticky top-0 text-xs text-gray-500 uppercase text-center"
+                    >
+                      Name
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr
+                    v-for="image of imageList"
+                    :key="'images' + image.id"
+                    class="hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <td class="py-2 pl-3">
+                      <div class="flex items-center h-5">
+                        <input
+                          :id="'checkboxImage' + image.id"
+                          v-model="image.checked"
+                          :disabled="processing"
+                          type="checkbox"
+                          class="border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                        />
+                        <label
+                          :for="'checkboxImage' + image.id"
+                          class="sr-only"
+                        >
+                          Checkbox
+                        </label>
+                      </div>
+                    </td>
+                    <td class="px-2 py-2 pl-4 w-12 h-12 text-xs text-gray-800 dark:text-gray-200">
+                      <img
+                        class="bg-gray-200 rounded-md object-contain"
+                        :src="getImageBlob(image)"
+                        alt="image"
+                      />
+                    </td>
+                    <td class="px-2 py-2 text-xs text-gray-800 dark:text-gray-200">
+                      {{ image.size | toMB }}MB
+                    </td>
+                    <td class="px-2 py-2 text-xs text-gray-800 dark:text-gray-200 text-ellipsis overflow-hidden">
+                      {{ image.name }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="sticky-bottom">
-      <div class="section">
-        <div class="section-title">Options</div>
-        <div class="section-container column">
-          <div class="switch">
+    <div class="sticky bottom-0 p-3 bg-primary">
+      <div class="container options mb-2">
+        <label class="block text-sm font-medium mb-2 text-gray-800 dark:text-gray-200">
+          Options
+        </label>
+        <div class="flex flex-col">
+          <div class="flex items-center mb-1">
             <input
-              class="switch__toggle"
-              id="compressImage"
               type="checkbox"
+              id="compressImage"
+              class="relative shrink-0 w-11 h-6 bg-gray-100 checked:bg-none checked:bg-blue-600 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 ring-1 ring-transparent focus:border-blue-600 focus:ring-blue-600 ring-offset-white focus:outline-none appearance-none dark:bg-gray-700 dark:checked:bg-blue-600 dark:focus:ring-offset-gray-800 before:inline-block before:w-5 before:h-5 before:bg-white checked:before:bg-blue-200 before:translate-x-0 checked:before:translate-x-full before:shadow before:rounded-full before:transform before:ring-0 before:transition before:ease-in-out before:duration-200 dark:before:bg-gray-400 dark:checked:before:bg-blue-200"
               v-model="isCompressImage"
               :disabled="processing"
             />
-            <label class="switch__label" for="compressImage">
+            <label
+              for="compressImage"
+              class="text-xs text-gray-500 ml-3 dark:text-gray-400"
+            >
               Compress Image
             </label>
           </div>
-          <div class="flex align-items-center">
-            <div class="switch">
+          <div class="flex items-center justify-between mb-1">
+            <div>
               <input
-                class="switch__toggle"
-                id="disableMiniImage"
                 type="checkbox"
+                id="disableMiniImage"
+                class="relative shrink-0 w-11 h-6 bg-gray-100 checked:bg-none checked:bg-blue-600 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 ring-1 ring-transparent focus:border-blue-600 focus:ring-blue-600 ring-offset-white focus:outline-none appearance-none dark:bg-gray-700 dark:checked:bg-blue-600 dark:focus:ring-offset-gray-800 before:inline-block before:w-5 before:h-5 before:bg-white checked:before:bg-blue-200 before:translate-x-0 checked:before:translate-x-full before:shadow before:rounded-full before:transform before:ring-0 before:transition before:ease-in-out before:duration-200 dark:before:bg-gray-400 dark:checked:before:bg-blue-200"
                 v-model="isDisableMiniImage"
                 :disabled="processing"
               />
-              <label class="switch__label" for="disableMiniImage">
+              <label
+                for="disableMiniImage"
+                class="text-xs text-gray-500 ml-3 dark:text-gray-400"
+              >
                 Disable Image
               </label>
             </div>
-            <div class="input input--byte">
-              <input class="input__field" type="number" v-model="threshold" />
-              <div class="type">Bytes</div>
+            <div class="relative w-2/5">
+              <input
+                type="number"
+                class="py-3 px-4 pr-16 block w-full border-gray-200 shadow-sm rounded-md text-xs focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 appearance-none"
+                placeholder="200"
+                v-model="threshold"
+              />
+              <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none z-20 pr-4">
+                <span class="text-gray-500">Bytes</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="section pb-xxsmall">
-        <div class="flex justify-content-between align-items-end">
-          <div class="label" v-if="uploading">Uploading zip to convert</div>
-          <div class="label" v-else-if="processing">
+      <div class="container action">
+        <div class="flex justify-between items-end">
+          <label
+            v-if="uploading"
+            class="w-full mr-1 text-gray-500 dark:text-gray-400"
+          >
+            Uploading zip to convert
+          </label>
+          <label
+            v-else-if="processing"
+            class="w-full mr-1 text-gray-500 dark:text-gray-400"
+          >
             Zipping {{ imagesCount }} images
-          </div>
-          <div class="label" v-else>
+          </label>
+          <label
+            v-else
+            class="w-full mr-1 text-gray-500 dark:text-gray-400"
+          >
             Selected {{ imagesCount }}/{{ imageList.length }} images ({{
               totalSize
             }}
             MB)
-          </div>
+          </label>
           <button
-            class="button button--primary mr-xxxsmall"
             v-if="!processing || !uploading"
+            type="button"
+            class="py-2 px-3 w-3/5 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 transition-all text-xs"
             :disabled="!hasImages || processing"
             @click="handleExport()"
           >
-            {{ !processing ? 'Export to .webp' : 'Zipping' }}
-            <div
-              class="icon icon--spinner icon--spin icon--white"
+            <span
               v-if="processing"
-            ></div>
+              class="animate-spin inline-block w-4 h-4 border-[3px] border-current border-t-transparent text-white rounded-full"
+              role="status"
+              aria-label="loading"
+            />
+            {{ !processing ? 'Export to .webp' : 'Zipping' }}
           </button>
+
           <button
-            class="button button--secondary mr-xxxsmall"
             v-else-if="uploading"
+            type="button"
+            class="py-2 px-3 w-3/5 inline-flex justify-center items-center gap-2 rounded-md border border-gray-200 font-semibold text-blue-500 hover:text-white hover:bg-red-500 hover:border-red-500 transition-all text-xs dark:border-gray-700 dark:hover:border-red-500"
             :disabled="!hasImages"
             @click="abortExport()"
-            @mouseover="isUploadHovering = true"
-            @mouseout="isUploadHovering = false"
-            :class="{ 'button--secondary-destructive': isUploadHovering }"
+            @mouseenter="isUploadHovering = true"
+            @mouseleave="isUploadHovering = false"
           >
+            <span
+              v-if="!isUploadHovering"
+              class="animate-spin inline-block w-4 h-4 border-[3px] border-current border-t-transparent text-blue-500 rounded-full"
+              role="status"
+              aria-label="loading"
+            />
             {{ isUploadHovering ? 'Cancel' : 'Uploading' }}
-            <div
-              class="icon icon--close icon--red"
-              v-if="isUploadHovering"
-            ></div>
-            <div class="icon icon--spinner icon--spin" v-else></div>
           </button>
         </div>
       </div>
     </div>
   </div>
-  <div class="section-container section-container--empty" v-else>
+  <div
+    v-else
+    class="flex flex-col items-center justify-center h-full"
+  >
     <img
       src="@/assets/img/icon-webp.png"
       width="100px"
       height="100px"
       alt="icon"
     />
-    <div class="type type--large justify-content-center">Select image...</div>
+    <label class="block text-sm font-medium mt-2 text-gray-800 dark:text-gray-200">Select image...</label>
   </div>
 </template>
 
 <script>
-// Add these lines to import the interactive figma-ui components as needed.
-// import { selectMenu, disclosure } from 'figma-plugin-ds'
 import { dispatch, handleEvent } from './uiMessageHandler'
 import { zipImages, fetchConvert } from '../utils'
 
@@ -157,13 +255,14 @@ export default {
       isDisableMiniImage: false,
       errorMessage: '',
       threshold: 200, // in Bytes,
-      isUploadHovering: false
+      isUploadHovering: false,
+      selectAll: true
     }
   },
   mounted() {
-    // Add these lines to initialize the interactive figma-ui components as needed.
-    // selectMenu.init()
-    // disclosure.init()
+    if (document.querySelector('html').classList.contains('figma-dark')) {
+      document.querySelector('html').classList.add('dark')
+    }
 
     // The following shows how messages from the main code can be handled in the UI code.
     handleEvent('nodeCreated', nodeID => {
@@ -269,126 +368,27 @@ export default {
 </script>
 
 <style lang="scss">
-@import '~figma-plugin-ds/dist/figma-plugin-ds';
-
-::-webkit-scrollbar {
-  width: 5px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #888;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-.image-list {
-  padding-bottom: 155px;
-}
-
-.section {
-  &:not(:first-child) {
-    border-top: 1px solid var(--silver);
-    margin-top: 8px;
-    padding-top: 8px;
+  .bg-primary {
+    background-color: var(--figma-color-bg);
   }
 
-  &-container {
+  .label {
+    &--error {
+      color: var(--silver);
+    }
+  }
+
+  .sticky-top {
+    position: absolute;
+    top: -50px;
     width: 100%;
-    display: flex;
-    cursor: default;
-    user-select: none;
+    z-index: 2;
+    background-color: var(--red);
+    transition: all 0.5s;
 
-    &--empty {
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
+    &.fade-in {
+      position: sticky;
+      top: 0;
     }
   }
-}
-
-.image {
-  &-items {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding: var(--size-xxsmall) 0;
-    border-top: 1px solid var(--silver);
-
-    &:first-child {
-      border-top: none;
-      padding-top: 0;
-    }
-
-    &__name {
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
-    }
-
-    &__picture {
-      min-width: 48px;
-      min-height: 48px;
-      height: 48px;
-      width: 48px;
-
-      img {
-        border-radius: var(--border-radius-med);
-        object-fit: contain;
-        width: 100%;
-        height: 100%;
-        border: 0.1px solid var(--silver);
-        background-color: var(--silver);
-      }
-    }
-  }
-}
-
-.label {
-  &--error {
-    color: var(--silver);
-  }
-}
-
-.input {
-  &--byte {
-    display: flex;
-    width: 100px;
-    align-items: center;
-  }
-}
-
-.sticky-bottom {
-  position: fixed;
-  width: 100%;
-  bottom: 0;
-  background-color: var(--white);
-  border-top: 1px solid var(--silver);
-
-  .container {
-    display: flex;
-    margin: 8px;
-    justify-content: flex-end;
-  }
-}
-
-.sticky-top {
-  position: absolute;
-  top: -50px;
-  width: 100%;
-  z-index: 2;
-  background-color: var(--red);
-  transition: all 0.5s;
-
-  &.fade-in {
-    position: sticky;
-    top: 0;
-  }
-}
 </style>

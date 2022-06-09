@@ -129,6 +129,7 @@ declare global {
     visible?: boolean
     width?: number
     height?: number
+    themeColors?: boolean
   }
 
   interface UIPostMessageOptions {
