@@ -4,16 +4,11 @@
     class="container text-xs"
   >
     <div
-      class="sticky-top"
-      :class="[{ 'fade-in': errorMessage }]"
+      v-if="errorMessage"
+      class="container sticky top-0 bg-red-500 text-white rounded-md p-4"
+      role="alert"
     >
-      <div class="flex">
-        <div class="label label--error">{{ errorMessage }}</div>
-        <div
-          class="icon icon--close icon--white"
-          @click="clearErrorMessage()"
-        ></div>
-      </div>
+      <span class="font-bold">Error</span> {{ errorMessage }}
     </div>
     <div class="container">
       <div class="flex flex-col">
@@ -46,19 +41,19 @@
                     </th>
                     <th
                       scope="col"
-                      class="px-2 py-2 pl-4 w-6/12 sticky top-0 text-xs text-gray-500 uppercase text-center"
+                      class="px-2 py-2 pl-4 w-3/12 sticky top-0 text-xs text-gray-500 uppercase text-left"
                     >
                       Image
                     </th>
                     <th
                       scope="col"
-                      class="px-2 py-2 w-2/12 sticky top-0 text-xs text-gray-500 uppercase text-center"
+                      class="px-2 py-2 w-2/12 sticky top-0 text-xs text-gray-500 uppercase text-left"
                     >
                       Size
                     </th>
                     <th
                       scope="col"
-                      class="px-2 py-2 w-3/12 sticky top-0 text-xs text-gray-500 uppercase text-center"
+                      class="px-2 py-2 w-3/12 sticky top-0 text-xs text-gray-500 uppercase text-left"
                     >
                       Name
                     </th>
@@ -87,17 +82,19 @@
                         </label>
                       </div>
                     </td>
-                    <td class="px-2 py-2 pl-4 w-12 h-12 text-xs text-gray-800 dark:text-gray-200">
-                      <img
-                        class="bg-gray-200 rounded-md object-contain"
-                        :src="getImageBlob(image)"
-                        alt="image"
-                      />
+                    <td class="px-2 py-2 pl-4">
+                      <div class="min-w-12 min-h-12 w-12 h-12">
+                        <img
+                          class="bg-gray-200 rounded-md object-contain w-full h-full"
+                          :src="getImageBlob(image)"
+                          alt="image"
+                        />
+                      </div>
                     </td>
                     <td class="px-2 py-2 text-xs text-gray-800 dark:text-gray-200">
                       {{ image.size | toMB }}MB
                     </td>
-                    <td class="px-2 py-2 text-xs text-gray-800 dark:text-gray-200 text-ellipsis overflow-hidden">
+                    <td class="px-2 py-2 text-xs text-gray-800 dark:text-gray-200 text-ellipsis overflow-hidden whitespace-nowrap max-w-0">
                       {{ image.name }}
                     </td>
                   </tr>
@@ -367,28 +364,8 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   .bg-primary {
     background-color: var(--figma-color-bg);
-  }
-
-  .label {
-    &--error {
-      color: var(--silver);
-    }
-  }
-
-  .sticky-top {
-    position: absolute;
-    top: -50px;
-    width: 100%;
-    z-index: 2;
-    background-color: var(--red);
-    transition: all 0.5s;
-
-    &.fade-in {
-      position: sticky;
-      top: 0;
-    }
   }
 </style>
