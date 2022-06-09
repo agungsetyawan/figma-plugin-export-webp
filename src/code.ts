@@ -32,7 +32,7 @@ const getImagesFromNode = async (nodes: ReadonlyArray<any>) => {
     const images: Array<Images> = []
     for (const node of nodes) {
       const { id, name, fills } = node
-      if (fills && fills.length) {
+      if (fills?.length) {
         for (const fill of fills) {
           switch (fill.type) {
             case 'IMAGE': {

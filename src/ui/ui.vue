@@ -1,77 +1,136 @@
-<template lang="pug">
-div
-  div(v-if='images.length')
-    .sticky-top(:class='{ "fade-in": errorMessage }')
-      .flex
-        .label.label--error {{ errorMessage }}
-        .icon.icon--close.icon--white(@click='clearErrorMessage()')
-    .image-list
-      .section
-        .section-title Images
-        .section-container.column.align-items-start
-          .image-items(v-for='image of imageList')
-            .image-items__checkbox.checkbox
-              input.checkbox__box(
-                type='checkbox',
-                :id='"checkboxImage" + image.id',
-                v-model='image.checked',
-                :disabled='processing'
-              )
-              label.checkbox__label(:for='"checkboxImage" + image.id')
-            .image-items__picture
-              img(:src='getImageBlob(image)')
-            .image-items__size.type.pl-xxsmall {{ image.size | toMB }}MB
-            .image-items__name.type.pl-xxsmall.pr-xxsmall {{ image.name }}
-    .sticky-bottom
-      .section
-        .section-title Options
-        .section-container.column
-          .switch
-            input#compressImage.switch__toggle(
-              type='checkbox',
-              v-model='isCompressImage',
-              :disabled='processing'
-            )
-            label.switch__label(for='compressImage') Compress Image
-          .flex.align-items-center
-            .switch
-              input#disableMiniImage.switch__toggle(
-                type='checkbox',
-                v-model='isDisableMiniImage',
-                :disabled='processing'
-              )
-              label.switch__label(for='disableMiniImage') Disable Image
-            .input.input--byte
-              input.input__field(type='number', v-model='threshold')
-              .type Bytes
-      .section.pb-xxsmall
-        .flex.justify-content-between.align-items-end
-          .label(v-if='uploading') Uploading zip to convert
-          .label(v-else-if='processing') Zipping {{ imagesCount }} images
-          .label(v-else) Selected {{ imagesCount }}/{{ imageList.length }} images ({{ totalSize }} MB)
-          button.button.button--primary.mr-xxxsmall(
-            v-if='!processing || !uploading',
-            :disabled='!hasImages || processing'
-          )(
-            @click='handleExport()'
-          ) {{ !processing ? "Export to .webp" : "Zipping" }}
-            .icon.icon--spinner.icon--spin.icon--white(v-if='processing')
-          button.button.button--secondary.mr-xxxsmall(
-            v-else-if='uploading',
-            :disabled='!hasImages'
-          )(
-            @click='abortExport()',
-            @mouseover='isUploadHovering = true',
-            @mouseout='isUploadHovering = false',
-            :class='{ "button--secondary-destructive": isUploadHovering }'
-          ) {{ isUploadHovering ? "Cancel" : "Uploading" }}
-            .icon.icon--close.icon--red(v-if='isUploadHovering')
-            .icon.icon--spinner.icon--spin(v-else)
-    //- button.button.button--primary(@click='createNode') Create a node
-    //- p.type.type--small {{ message }}
-  .section-container.section-container--empty(v-else)
-    img(src='../assets/img/icon-webp.png', width='100px', height='100px')
-    .type.type--large.justify-content-center Select image...
+<template>
+  <div class="container flex" v-if="images.length">
+    <div class="sticky-top" :class="[{ 'fade-in': errorMessage }]">
+      <div class="flex">
+        <div class="label label--error">{{ errorMessage }}</div>
+        <div
+          class="icon icon--close icon--white"
+          @click="clearErrorMessage()"
+        ></div>
+      </div>
+    </div>
+    <div class="image-list">
+      <div class="section">
+        <div class="section-title">Images</div>
+        <div class="section-container column align-items-start">
+          <div
+            class="image-items"
+            v-for="image of imageList"
+            :key="'image' + image.id"
+          >
+            <div class="image-items__checkbox checkbox">
+              <input
+                class="checkbox__box"
+                type="checkbox"
+                :id="'checkboxImage' + image.id"
+                v-model="image.checked"
+                :disabled="processing"
+              />
+              <label class="checkbox__label" :for="'checkboxImage' + image.id">
+              </label>
+            </div>
+            <div class="image-items__picture">
+              <img :src="getImageBlob(image)" alt="image" />
+            </div>
+            <div class="image-items__size type pl-xxsmall">
+              {{ image.size | toMB }}MB
+            </div>
+            <div class="image-items__name type pl-xxsmall pr-xxsmall">
+              {{ image.name }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sticky-bottom">
+      <div class="section">
+        <div class="section-title">Options</div>
+        <div class="section-container column">
+          <div class="switch">
+            <input
+              class="switch__toggle"
+              id="compressImage"
+              type="checkbox"
+              v-model="isCompressImage"
+              :disabled="processing"
+            />
+            <label class="switch__label" for="compressImage">
+              Compress Image
+            </label>
+          </div>
+          <div class="flex align-items-center">
+            <div class="switch">
+              <input
+                class="switch__toggle"
+                id="disableMiniImage"
+                type="checkbox"
+                v-model="isDisableMiniImage"
+                :disabled="processing"
+              />
+              <label class="switch__label" for="disableMiniImage">
+                Disable Image
+              </label>
+            </div>
+            <div class="input input--byte">
+              <input class="input__field" type="number" v-model="threshold" />
+              <div class="type">Bytes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section pb-xxsmall">
+        <div class="flex justify-content-between align-items-end">
+          <div class="label" v-if="uploading">Uploading zip to convert</div>
+          <div class="label" v-else-if="processing">
+            Zipping {{ imagesCount }} images
+          </div>
+          <div class="label" v-else>
+            Selected {{ imagesCount }}/{{ imageList.length }} images ({{
+              totalSize
+            }}
+            MB)
+          </div>
+          <button
+            class="button button--primary mr-xxxsmall"
+            v-if="!processing || !uploading"
+            :disabled="!hasImages || processing"
+            @click="handleExport()"
+          >
+            {{ !processing ? 'Export to .webp' : 'Zipping' }}
+            <div
+              class="icon icon--spinner icon--spin icon--white"
+              v-if="processing"
+            ></div>
+          </button>
+          <button
+            class="button button--secondary mr-xxxsmall"
+            v-else-if="uploading"
+            :disabled="!hasImages"
+            @click="abortExport()"
+            @mouseover="isUploadHovering = true"
+            @mouseout="isUploadHovering = false"
+            :class="{ 'button--secondary-destructive': isUploadHovering }"
+          >
+            {{ isUploadHovering ? 'Cancel' : 'Uploading' }}
+            <div
+              class="icon icon--close icon--red"
+              v-if="isUploadHovering"
+            ></div>
+            <div class="icon icon--spinner icon--spin" v-else></div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section-container section-container--empty" v-else>
+    <img
+      src="@/assets/img/icon-webp.png"
+      width="100px"
+      height="100px"
+      alt="icon"
+    />
+    <div class="type type--large justify-content-center">Select image...</div>
+  </div>
 </template>
 
 <script>
@@ -114,8 +173,8 @@ export default {
     handleEvent('getImages', images => {
       if (!this.processing)
         this.images = [
-          ...images.map(image => {
-            const size = image.bytes.byteLength
+          ...images?.map(image => {
+            const size = image.bytes?.byteLength
             return {
               ...image,
               checked: this.isDisableMiniImage ? size >= this.threshold : true,
@@ -161,7 +220,11 @@ export default {
         const zipImage = await zipImages(this.checkedImage)
 
         this.uploading = true
-        const outputFile = await fetchConvert(zipImage, this.isCompressImage, controller.signal)
+        const outputFile = await fetchConvert(
+          zipImage,
+          this.isCompressImage,
+          controller.signal
+        )
         const file = window.URL.createObjectURL(outputFile)
         window.location.assign(file)
       } catch (error) {

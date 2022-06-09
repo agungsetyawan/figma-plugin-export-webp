@@ -1,12 +1,16 @@
-const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
+const HtmlWebpackInlineSourcePlugin = require('html-inline-script-webpack-plugin')
 const RemovePlugin = require('remove-files-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const path = require('path')
 
-module.exports = (env, argv) => ({
+module.exports = (_env, argv) => ({
   // This is necessary because Figma's 'eval' works differently than normal eval
   devtool: argv.mode === 'production' ? false : 'inline-source-map',
+
+  // watchOptions: {
+  //   ignored: /dist/
+  // },
 
   entry: {
     ui: './src/ui/ui.ts', // The entry point for your UI code
@@ -25,20 +29,30 @@ module.exports = (env, argv) => ({
         }
       },
 
+      {
+        test: /\.js$/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env']
+          }
+        }
+      },
+
       // Enables including CSS by doing "import './file.css'" in your TypeScript code
       {
         test: /\.css$/,
-        loader: [{ loader: 'style-loader' }, { loader: 'css-loader' }]
+        use: [
+          { loader: 'style-loader' },
+          { loader: 'css-loader' },
+          { loader: 'postcss-loader' }
+        ]
       },
       {
         test: /\.scss$/,
         use: [
-          {
-            loader: 'style-loader'
-          },
-          {
-            loader: 'css-loader'
-          },
+          { loader: 'style-loader' },
+          { loader: 'css-loader' },
           {
             loader: 'sass-loader',
             options: {
@@ -49,22 +63,33 @@ module.exports = (env, argv) => ({
       },
 
       {
-        test: /\.pug$/,
-        loader: 'pug-plain-loader'
-      },
-
-      {
         test: /\.vue$/,
         loader: 'vue-loader'
       },
 
       // Allows you to use "<%= require('./file.svg') %>" in your HTML code to get a data URI
-      { test: /\.(png|jpg|gif|webp|svg)$/, loader: [{ loader: 'url-loader' }] }
+      {
+        test: /\.(png|jpg|gif|webp|svg)$/,
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              esModule: false
+            }
+          }
+        ]
+      }
     ]
   },
 
   // Webpack tries these extensions for you if you omit the extension like "import './file'"
-  resolve: { extensions: ['.tsx', '.ts', '.jsx', '.js'] },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.jsx', '.js'],
+    alias: {
+      '@': path.resolve('src'),
+      assets: path.resolve('src/assets')
+    }
+  },
 
   output: {
     filename: '[name].js',
