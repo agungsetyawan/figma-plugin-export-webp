@@ -48,23 +48,23 @@ div
         .flex.justify-content-between.align-items-end
           .label(v-if='uploading') Uploading zip to convert
           .label(v-else-if='processing') Zipping {{ imagesCount }} images
-          .label(v-else) Selected {{ imagesCount }} images ({{ totalSize }} MB)
+          .label(v-else) Selected {{ imagesCount }}/{{ imageList.length }} images ({{ totalSize }} MB)
           button.button.button--primary.mr-xxxsmall(
             v-if='!processing || !uploading',
             :disabled='!hasImages || processing'
           )(
             @click='handleExport()'
-          ) {{ !processing ? 'Export to .webp' : 'Zipping' }}
+          ) {{ !processing ? "Export to .webp" : "Zipping" }}
             .icon.icon--spinner.icon--spin.icon--white(v-if='processing')
           button.button.button--secondary.mr-xxxsmall(
             v-else-if='uploading',
             :disabled='!hasImages'
           )(
-            @click='abortExport()'
-            @mouseover="isUploadHovering = true"
-            @mouseout="isUploadHovering = false" 
+            @click='abortExport()',
+            @mouseover='isUploadHovering = true',
+            @mouseout='isUploadHovering = false',
             :class='{ "button--secondary-destructive": isUploadHovering }'
-          ) {{ isUploadHovering ? 'Cancel' : 'Uploading' }}
+          ) {{ isUploadHovering ? "Cancel" : "Uploading" }}
             .icon.icon--close.icon--red(v-if='isUploadHovering')
             .icon.icon--spinner.icon--spin(v-else)
     //- button.button.button--primary(@click='createNode') Create a node

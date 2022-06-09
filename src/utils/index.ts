@@ -28,7 +28,7 @@ export const zipImages = (images: Array<Images>): Promise<string> => {
 
 export const fetchConvert = (
   file: string,
-  compress: boolean = false,
+  compress: boolean,
   signal: AbortSignal
 ): Promise<Blob> => {
   return new Promise((resolve, reject) => {
