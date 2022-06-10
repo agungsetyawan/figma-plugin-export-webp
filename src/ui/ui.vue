@@ -27,12 +27,14 @@
                     >
                       <div class="flex items-center h-5">
                         <input
-                          id="table-checkbox-all"
+                          id="selectAll"
                           type="checkbox"
                           class="border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                          v-model="selectAll"
+                          @click="handleSelectAll()"
                         />
                         <label
-                          for="table-checkbox-all"
+                          for="selectAll"
                           class="sr-only"
                         >
                           Checkbox
@@ -170,13 +172,13 @@
             v-else-if="processing"
             class="w-full mr-1 text-gray-500 dark:text-gray-400"
           >
-            Zipping {{ imagesCount }} images
+            Zipping {{ selectedImagesCount }} images
           </label>
           <label
             v-else
             class="w-full mr-1 text-gray-500 dark:text-gray-400"
           >
-            Selected {{ imagesCount }}/{{ imageList.length }} images ({{
+            Selected {{ selectedImagesCount }}/{{ imageListCount }} images ({{
               totalSize
             }}
             MB)
@@ -185,7 +187,7 @@
             v-if="!processing || !uploading"
             type="button"
             class="py-2 px-3 w-3/5 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 transition-all text-xs"
-            :disabled="!hasImages || processing"
+            :disabled="!hasSelectedImage || processing"
             @click="handleExport()"
           >
             <span
@@ -201,7 +203,7 @@
             v-else-if="uploading"
             type="button"
             class="py-2 px-3 w-3/5 inline-flex justify-center items-center gap-2 rounded-md border border-gray-200 font-semibold text-blue-500 hover:text-white hover:bg-red-500 hover:border-red-500 transition-all text-xs dark:border-gray-700 dark:hover:border-red-500"
-            :disabled="!hasImages"
+            :disabled="!hasSelectedImage"
             @click="abortExport()"
             @mouseenter="isUploadHovering = true"
             @mouseleave="isUploadHovering = false"
@@ -275,7 +277,7 @@ export default {
             const size = image.bytes?.byteLength
             return {
               ...image,
-              checked: this.isDisableMiniImage ? size >= this.threshold : true,
+              checked: this.checkedImage(size),
               size
             }
           })
@@ -284,21 +286,22 @@ export default {
   },
   computed: {
     imageList() {
-      return this.images.filter(image =>
-        this.isDisableMiniImage ? image.size >= this.threshold : true
-      )
+      return this.images.filter(image => this.checkedImage(image.size))
     },
-    checkedImage() {
+    imageListCount() {
+      return this.imageList.length
+    },
+    selectedImages() {
       return this.images.filter(image => image.checked)
     },
-    imagesCount() {
-      return this.checkedImage.length
+    selectedImagesCount() {
+      return this.selectedImages.length
     },
-    hasImages() {
-      return this.imagesCount > 0
+    hasSelectedImage() {
+      return this.selectedImagesCount > 0
     },
     totalSize() {
-      const size = this.checkedImage.reduce(
+      const size = this.selectedImages.reduce(
         (total, image) => total + image.bytes.byteLength,
         0
       )
@@ -315,7 +318,7 @@ export default {
         controller = new AbortController()
         this.clearErrorMessage()
         this.processing = true
-        const zipImage = await zipImages(this.checkedImage)
+        const zipImage = await zipImages(this.selectedImages)
 
         this.uploading = true
         const outputFile = await fetchConvert(
@@ -348,6 +351,22 @@ export default {
     resetProcessState() {
       this.processing = false
       this.uploading = false
+    },
+    handleSelectAll() {
+      this.selectAll = !this.selectAll
+      if (this.selectAll) {
+        this.images.forEach(
+          image => (image.checked = this.checkedImage(image.size))
+        )
+        return
+      }
+      this.images.forEach(image => (image.checked = false))
+    },
+    checkedImage(imageSize) {
+      return this.isDisableMiniImage ? imageSize >= this.threshold : true
+    },
+    setSelectAll() {
+      this.selectAll = this.selectedImagesCount === this.imageListCount
     }
   },
   watch: {
@@ -361,6 +380,12 @@ export default {
           image.checked = false
         }
       })
+    },
+    imageListCount() {
+      this.setSelectAll()
+    },
+    selectedImagesCount() {
+      this.setSelectAll()
     }
   }
 }
