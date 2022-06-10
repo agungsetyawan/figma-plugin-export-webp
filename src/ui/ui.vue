@@ -10,7 +10,7 @@
     >
       <span class="font-bold">Error</span> {{ errorMessage }}
     </div>
-    <div class="container">
+    <div class="container pb-44">
       <div class="flex flex-col">
         <div class="overflow-x-auto">
           <div class="min-w-full inline-block align-middle">
@@ -105,29 +105,31 @@
         </div>
       </div>
     </div>
-    <div class="sticky bottom-0 p-3 bg-primary">
+    <div class="fixed bottom-0 p-3 border-t dark:border-gray-700 bg-primary">
       <div class="container options mb-2">
         <label class="block text-sm font-medium mb-2 text-gray-800 dark:text-gray-200">
           Options
         </label>
         <div class="flex flex-col">
-          <div class="flex items-center mb-1">
-            <input
-              type="checkbox"
-              id="compressImage"
-              class="relative shrink-0 w-11 h-6 bg-gray-100 checked:bg-none checked:bg-blue-600 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 ring-1 ring-transparent focus:border-blue-600 focus:ring-blue-600 ring-offset-white focus:outline-none appearance-none dark:bg-gray-700 dark:checked:bg-blue-600 dark:focus:ring-offset-gray-800 before:inline-block before:w-5 before:h-5 before:bg-white checked:before:bg-blue-200 before:translate-x-0 checked:before:translate-x-full before:shadow before:rounded-full before:transform before:ring-0 before:transition before:ease-in-out before:duration-200 dark:before:bg-gray-400 dark:checked:before:bg-blue-200"
-              v-model="isCompressImage"
-              :disabled="processing"
-            />
-            <label
-              for="compressImage"
-              class="text-xs text-gray-500 ml-3 dark:text-gray-400"
-            >
-              Compress Image
-            </label>
+          <div class="flex mb-1 h-8">
+            <div class="flex items-center">
+              <input
+                type="checkbox"
+                id="compressImage"
+                class="relative shrink-0 w-11 h-6 bg-gray-100 checked:bg-none checked:bg-blue-600 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 ring-1 ring-transparent focus:border-blue-600 focus:ring-blue-600 ring-offset-white focus:outline-none appearance-none dark:bg-gray-700 dark:checked:bg-blue-600 dark:focus:ring-offset-gray-800 before:inline-block before:w-5 before:h-5 before:bg-white checked:before:bg-blue-200 before:translate-x-0 checked:before:translate-x-full before:shadow before:rounded-full before:transform before:ring-0 before:transition before:ease-in-out before:duration-200 dark:before:bg-gray-400 dark:checked:before:bg-blue-200"
+                v-model="isCompressImage"
+                :disabled="processing"
+              />
+              <label
+                for="compressImage"
+                class="text-xs text-gray-500 ml-3 dark:text-gray-400"
+              >
+                Compress Image
+              </label>
+            </div>
           </div>
-          <div class="flex items-center justify-between mb-1">
-            <div>
+          <div class="flex justify-between mb-1 h-8">
+            <div class="flex items-center">
               <input
                 type="checkbox"
                 id="disableMiniImage"
@@ -145,7 +147,7 @@
             <div class="relative w-2/5">
               <input
                 type="number"
-                class="py-3 px-4 pr-16 block w-full border-gray-200 shadow-sm rounded-md text-xs focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 appearance-none"
+                class="py-2 px-4 pr-16 block w-full border-gray-200 shadow-sm rounded-md text-xs focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 appearance-none"
                 placeholder="200"
                 v-model="threshold"
               />
