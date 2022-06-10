@@ -109,7 +109,7 @@
     </div>
     <div class="fixed bottom-0 p-3 border-t dark:border-gray-700 bg-primary">
       <div class="container options mb-2">
-        <label class="block text-sm font-medium mb-2 text-gray-800 dark:text-gray-200">
+        <label class="block text-sm font-medium mb-2 text-gray-800 dark:text-gray-500">
           Options
         </label>
         <div class="flex flex-col">
@@ -149,12 +149,27 @@
             <div class="relative w-2/5">
               <input
                 type="number"
-                class="py-2 px-4 pr-16 block w-full border-gray-200 shadow-sm rounded-md text-xs focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 appearance-none"
-                placeholder="200"
-                v-model="threshold"
+                class="block py-2 px-4 pr-16 w-full border-gray-200 shadow-sm rounded-md text-xs focus:z-10 focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 text-gray-500 dark:text-gray-400 appearance-none"
+                placeholder="0"
+                v-model="maxSize"
               />
-              <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none z-20 pr-4">
-                <span class="text-gray-500">Bytes</span>
+              <div class="absolute pr-1 inset-y-0 right-0 flex items-center text-gray-500 dark:text-gray-400">
+                <label
+                  for="sizeType"
+                  class="sr-only"
+                >
+                  Size Type
+                </label>
+                <select
+                  id="sizeType"
+                  name="sizeType"
+                  class="block py-1.5 w-full border-transparent rounded-md focus:ring-blue-600 focus:border-blue-600 dark:bg-gray-800"
+                  v-model="sizeType"
+                >
+                  <option value="B">Bytes</option>
+                  <option value="KB">KB</option>
+                  <option value="MB">MB</option>
+                </select>
               </div>
             </div>
           </div>
@@ -255,9 +270,10 @@ export default {
       isCompressImage: false,
       isDisableMiniImage: false,
       errorMessage: '',
-      threshold: 200, // in Bytes,
       isUploadHovering: false,
-      selectAll: true
+      selectAll: true,
+      maxSize: 200, // in Bytes,
+      sizeType: 'B'
     }
   },
   mounted() {
@@ -306,6 +322,16 @@ export default {
         0
       )
       return (size / 1048576).toFixed(2)
+    },
+    threshold() {
+      switch (this.sizeType) {
+        case 'KB':
+          return this.maxSize * 1024
+        case 'MB':
+          return this.maxSize * 1048576
+        default:
+          return this.maxSize
+      }
     }
   },
   methods: {
