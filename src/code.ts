@@ -76,8 +76,15 @@ const main = async (): Promise<void> => {
   try {
     figma.showUI(__html__, { height: 470, width: 320, themeColors: true })
     dispatchGetImages()
-    const debounced = debounce(dispatchGetImages, 2000)
-    figma.on('selectionchange', () => debounced())
+    figma.on('selectionchange', () => {
+      const { selection } = figma.currentPage
+      if (selection.length < 5) {
+        dispatchGetImages()
+        return
+      }
+      const debounced = debounce(dispatchGetImages, 1500)
+      debounced()
+    })
 
     // The following shows how messages from the UI code can be handled in the main code.
     handleEvent('createNode', () => {

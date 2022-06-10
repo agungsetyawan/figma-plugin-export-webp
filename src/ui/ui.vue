@@ -5,7 +5,7 @@
   >
     <div
       v-if="errorMessage"
-      class="container sticky top-0 bg-red-500 text-white rounded-md p-4"
+      class="container sticky top-0 bg-red-500 text-white rounded-md p-4 z-10"
       role="alert"
     >
       <span class="font-bold">Error</span> {{ errorMessage }}
@@ -90,6 +90,7 @@
                           class="bg-gray-200 rounded-md object-contain w-full h-full"
                           :src="getImageBlob(image)"
                           alt="image"
+                          loading="lazy"
                         />
                       </div>
                     </td>
