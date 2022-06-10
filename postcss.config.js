@@ -1,4 +1,8 @@
-const tailwindcss = require('tailwindcss')
 module.exports = {
-  plugins: ['postcss-preset-env', tailwindcss]
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+    cssnano:
+      process.env.NODE_ENV === 'production' ? { preset: 'default' } : false
+  }
 }
