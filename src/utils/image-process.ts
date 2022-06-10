@@ -13,10 +13,9 @@ export const zipImages = (images: Array<Images>): Promise<string> => {
     const zip = new JSZip()
 
     for (const image of images) {
-      const { bytes, name, type, mimetype } = image
+      const { bytes, name, type } = image
       const extension = type.toLowerCase()
-      const blob = new Blob([new Uint8Array(bytes)], { type: mimetype })
-      zip.file(`${name}.${extension}`, blob, { base64: true })
+      zip.file(`${name}.${extension}`, bytes, { base64: true })
     }
 
     zip
