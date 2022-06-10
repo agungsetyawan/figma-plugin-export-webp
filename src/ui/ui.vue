@@ -235,24 +235,34 @@
         </div>
       </div>
     </div>
+    <img
+      src="https://setyawan.goatcounter.com/count?p=/plugin-webp"
+      alt="counter"
+    >
   </div>
   <div
     v-else
     class="flex flex-col items-center justify-center h-full"
   >
     <img
-      src="@/assets/img/icon-webp.png"
+      src="@/assets/img/webp.svg"
       width="100px"
       height="100px"
       alt="icon"
     />
     <label class="block text-sm font-medium mt-2 text-gray-800 dark:text-gray-200">Select image...</label>
+    <label class="fixed bottom-2 text-xs text-gray-800 dark:text-gray-200">{{ appVersion }}</label>
+    <img
+      src="https://setyawan.goatcounter.com/count?p=/plugin-webp-welcome"
+      alt="counter"
+    >
   </div>
 </template>
 
 <script>
 import { dispatch, handleEvent } from '@/utils/ui-message-handler'
 import { zipImages, fetchConvert } from '@/utils/image-process'
+import { version } from '../../package.json'
 
 let controller
 
@@ -274,11 +284,12 @@ export default {
       isUploadHovering: false,
       isSelectAll: true,
       maxSize: 200, // in Bytes,
-      sizeType: 'B'
+      sizeType: 'B',
+      appVersion: version
     }
   },
   mounted() {
-    if (document.querySelector('html').classList.contains('figma-dark')) {
+    if (document?.querySelector('html').classList.contains('figma-dark')) {
       document.querySelector('html').classList.add('dark')
     }
 
