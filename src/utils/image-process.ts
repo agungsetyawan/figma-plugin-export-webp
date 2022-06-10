@@ -1,6 +1,6 @@
-import JSZip from 'jszip/dist/jszip.min.js'
+import JSZip from 'jszip'
 
-export interface Images {
+interface Images {
   id: string
   name: string
   bytes: Uint8Array
@@ -32,10 +32,10 @@ export const fetchConvert = (
   signal: AbortSignal
 ): Promise<Blob> => {
   return new Promise((resolve, reject) => {
-    const body = { file, compress }
+    const body: any = { file, compress }
     const params = new URLSearchParams()
     for (const key in body) {
-      params.append(key, body[key])
+      params.append(key, body[key as keyof typeof body])
     }
 
     const url = 'https://setyawan.api.stdlib.com/convert-webp@dev/convert'

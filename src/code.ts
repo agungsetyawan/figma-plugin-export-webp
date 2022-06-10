@@ -1,5 +1,5 @@
 import debounce from 'debounce-promise'
-import { dispatch, handleEvent } from './codeMessageHandler'
+import { dispatch, handleEvent } from './utils/code-message-handler'
 
 export interface Images {
   id: string
@@ -38,8 +38,10 @@ const getImagesFromNode = async (nodes: ReadonlyArray<any>) => {
             case 'IMAGE': {
               const bytes = await figma
                 .getImageByHash(fill.imageHash)
-                .getBytesAsync()
-              images.push(setImage(id, name, bytes).PNG)
+                ?.getBytesAsync()
+              if (bytes) {
+                images.push(setImage(id, name, bytes).PNG)
+              }
               break
             }
             case 'SOLID': {

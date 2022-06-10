@@ -231,8 +231,8 @@
 </template>
 
 <script>
-import { dispatch, handleEvent } from './uiMessageHandler'
-import { zipImages, fetchConvert } from '../utils'
+import { dispatch, handleEvent } from '@/utils/ui-message-handler'
+import { zipImages, fetchConvert } from '@/utils/image-process'
 
 let controller
 
