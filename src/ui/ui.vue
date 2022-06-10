@@ -27,14 +27,14 @@
                     >
                       <div class="flex items-center h-5">
                         <input
-                          id="selectAll"
+                          id="isSelectAll"
                           type="checkbox"
                           class="border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                          v-model="selectAll"
+                          v-model="isSelectAll"
                           @click="handleSelectAll()"
                         />
                         <label
-                          for="selectAll"
+                          for="isSelectAll"
                           class="sr-only"
                         >
                           Checkbox
@@ -271,7 +271,7 @@ export default {
       isDisableMiniImage: false,
       errorMessage: '',
       isUploadHovering: false,
-      selectAll: true,
+      isSelectAll: true,
       maxSize: 200, // in Bytes,
       sizeType: 'B'
     }
@@ -379,8 +379,8 @@ export default {
       this.uploading = false
     },
     handleSelectAll() {
-      this.selectAll = !this.selectAll
-      if (this.selectAll) {
+      this.isSelectAll = !this.isSelectAll
+      if (this.isSelectAll) {
         this.images.forEach(
           image => (image.checked = this.checkedImage(image.size))
         )
@@ -392,7 +392,7 @@ export default {
       return this.isDisableMiniImage ? imageSize >= this.threshold : true
     },
     setSelectAll() {
-      this.selectAll = this.selectedImagesCount === this.imageListCount
+      this.isSelectAll = this.selectedImagesCount === this.imageListCount
     }
   },
   watch: {
